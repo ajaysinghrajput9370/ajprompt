@@ -1,30 +1,60 @@
+# ==========================================
+# app.py - Render.com ke liye Modified (Python 3.11 compatible)
+# ==========================================
+
 import os
+import sys
 import base64
 import requests
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, jsonify
+
+# Database import
 from database import init_db, SessionLocal, Prompt
 
 app = Flask(__name__)
 
+# ==========================================
 # DATABASE INIT
+# ==========================================
+
+# Render Disk path - agar available ho toh
+DATABASE_DIR = "/var/lib/database"
+if os.path.exists(DATABASE_DIR):
+    os.makedirs(DATABASE_DIR, exist_ok=True)
+    os.environ['DATABASE_PATH'] = os.path.join(DATABASE_DIR, "database.db")
+
 init_db()
 
-# GITHUB SETTINGS
+# ==========================================
+# GITHUB SETTINGS (Render Environment Variables se)
+# ==========================================
+
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_USERNAME = os.getenv("GITHUB_USERNAME")
 GITHUB_REPO = os.getenv("GITHUB_REPO")
 GITHUB_BRANCH = os.getenv("GITHUB_BRANCH", "main")
 
-# HOME
+
+# ==========================================
+# HOME - USER SIDE
+# ==========================================
+
 @app.route("/")
 def home():
-    db = SessionLocal()
-    prompts = db.query(Prompt).filter(Prompt.is_active == True).order_by(Prompt.created_at.desc()).all()
-    db.close()
-    return render_template("index.html", prompts=prompts)
+    try:
+        db = SessionLocal()
+        prompts = db.query(Prompt).filter(Prompt.is_active == True).order_by(Prompt.created_at.desc()).all()
+        db.close()
+        return render_template("index.html", prompts=prompts)
+    except Exception as e:
+        return f"Database error: {e}", 500
 
-# API
+
+# ==========================================
+# API - GET PROMPTS
+# ==========================================
+
 @app.route("/api/prompts")
 def api_prompts():
     db = SessionLocal()
@@ -44,7 +74,11 @@ def api_prompts():
         })
     return jsonify(result)
 
+
+# ==========================================
 # PROMPT DETAIL
+# ==========================================
+
 @app.route("/prompt/<int:prompt_id>")
 def prompt_detail(prompt_id):
     db = SessionLocal()
@@ -59,7 +93,11 @@ def prompt_detail(prompt_id):
     
     return render_template("prompt_detail.html", prompt=prompt)
 
-# ADMIN
+
+# ==========================================
+# ADMIN PANEL
+# ==========================================
+
 @app.route("/admin")
 def admin():
     db = SessionLocal()
@@ -67,7 +105,11 @@ def admin():
     db.close()
     return render_template("admin.html", prompts=prompts)
 
-# UPLOAD TO GITHUB
+
+# ==========================================
+# UPLOAD FILE TO GITHUB
+# ==========================================
+
 def upload_to_github(file):
     if not GITHUB_TOKEN:
         raise Exception("GITHUB_TOKEN environment variable missing")
@@ -80,11 +122,19 @@ def upload_to_github(file):
     if not original_name:
         raise Exception("Invalid file name")
     
+    # Secure filename
     filename = original_name.replace(" ", "_")
+    
+    # Folder in GitHub
     github_path = f"uploads/prompts/{filename}"
+    
+    # Read file
     file_data = file.read()
+    
+    # Convert to Base64
     encoded_data = base64.b64encode(file_data).decode("utf-8")
     
+    # GitHub API
     api_url = f"https://api.github.com/repos/{GITHUB_USERNAME}/{GITHUB_REPO}/contents/{github_path}"
     
     headers = {
@@ -103,10 +153,15 @@ def upload_to_github(file):
     if response.status_code not in [200, 201]:
         raise Exception(f"GitHub upload failed: {response.text}")
     
+    # GitHub Raw URL
     raw_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{GITHUB_REPO}/{GITHUB_BRANCH}/{github_path}"
     return raw_url
 
-# ADD PROMPT
+
+# ==========================================
+# ADD PROMPT (ADMIN)
+# ==========================================
+
 @app.route("/admin/add-prompt", methods=["POST"])
 def add_prompt():
     title = request.form.get("title", "").strip()
@@ -167,7 +222,11 @@ def add_prompt():
         db.close()
         return render_template("admin.html", prompts=prompts, error=str(e))
 
-# DELETE PROMPT
+
+# ==========================================
+# DELETE PROMPT (ADMIN)
+# ==========================================
+
 @app.route("/admin/delete-prompt/<int:prompt_id>", methods=["POST"])
 def delete_prompt(prompt_id):
     db = SessionLocal()
@@ -180,7 +239,11 @@ def delete_prompt(prompt_id):
     db.close()
     return redirect(url_for("admin"))
 
-# RUN
+
+# ==========================================
+# RUN - Render ke liye
+# ==========================================
+
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
