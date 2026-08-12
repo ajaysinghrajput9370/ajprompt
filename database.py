@@ -1,8 +1,12 @@
+# ==========================================
+# database.py - Render Disk Support
+# ==========================================
+
+import os
 from sqlalchemy import create_engine, Column, Integer, String, Text, Boolean, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
-import os
 
 Base = declarative_base()
 
@@ -22,20 +26,20 @@ class Prompt(Base):
     def __repr__(self):
         return f"<Prompt(id={self.id}, title={self.title})>"
 
-# Render ke liye persistent path
+# Database setup - Render Disk support
 def get_database_url():
-    # Render Disk mount path
+    # Render Disk path
     render_db_path = "/var/lib/database/database.db"
-    # Local development ke liye
-    local_db_path = "database.db"
     
-    # Agar Render Disk available hai to use karein
-    if os.path.exists("/var/lib/database"):
-        db_path = render_db_path
-    else:
-        db_path = local_db_path
+    # Agar Render Disk available hai toh use karein
+    if os.path.exists("/var/lib/database") or os.getenv("RENDER"):
+        # Render par hai
+        db_dir = "/var/lib/database"
+        os.makedirs(db_dir, exist_ok=True)
+        return f"sqlite:///{os.path.join(db_dir, 'database.db')}"
     
-    return f"sqlite:///{db_path}"
+    # Local development
+    return "sqlite:///database.db"
 
 DATABASE_URL = get_database_url()
 engine = create_engine(DATABASE_URL, echo=False)
