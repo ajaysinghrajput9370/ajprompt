@@ -1,0 +1,158 @@
+<!-- ========================================== -->
+<!-- templates/admin_login.html - Hidden Login -->
+<!-- ========================================== -->
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 Admin Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: #f5f1e7;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .login-box {
+            background: #fcf9f4;
+            border-radius: 32px;
+            border: 1px solid #e4d9c8;
+            padding: 2.5rem 2rem;
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+        }
+        .login-box h1 {
+            font-size: 1.8rem;
+            color: #3d2c1a;
+            text-align: center;
+            margin-bottom: 0.3rem;
+        }
+        .login-box .subtitle {
+            text-align: center;
+            color: #7a6449;
+            font-size: 0.9rem;
+            margin-bottom: 1.8rem;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #3d2c1a;
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border-radius: 18px;
+            border: 1px solid #d6c9b4;
+            background: #fcf9f4;
+            font-size: 1rem;
+            transition: 0.1s;
+        }
+        .form-group input:focus {
+            outline: 2px solid #b8a182;
+            border-color: transparent;
+        }
+        .login-btn {
+            width: 100%;
+            background: #2f2214;
+            border: none;
+            color: #f6efe5;
+            font-weight: 600;
+            padding: 0.8rem;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 1rem;
+            border: 1px solid #4d3d29;
+            transition: 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .login-btn:hover {
+            background: #42321e;
+        }
+        .error-msg {
+            background: #fde8e8;
+            color: #a13232;
+            padding: 0.6rem 1rem;
+            border-radius: 18px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            text-align: center;
+            border: 1px solid #f5c2c2;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 1.2rem;
+        }
+        .back-link a {
+            color: #7a6449;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        .back-link a:hover {
+            color: #3d2c1a;
+            text-decoration: underline;
+        }
+        .lock-icon {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #8b7a62;
+            margin-bottom: 0.5rem;
+        }
+        @media (max-width: 480px) {
+            .login-box {
+                padding: 1.8rem 1.2rem;
+            }
+            .login-box h1 {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <div class="lock-icon">🔐</div>
+        <h1>Admin Login</h1>
+        <p class="subtitle">कृपया अपनी ID और पासवर्ड डालें</p>
+        
+        {% if error %}
+        <div class="error-msg">{{ error }}</div>
+        {% endif %}
+        
+        <form method="POST">
+            <div class="form-group">
+                <label for="phone"><i class="fas fa-phone"></i> मोबाइल नंबर</label>
+                <input type="text" id="phone" name="phone" placeholder="9355491854" value="{{ request.form.phone if request.form else '' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="password"><i class="fas fa-lock"></i> पासवर्ड</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="login-btn">
+                <i class="fas fa-sign-in-alt"></i> लॉगिन करें
+            </button>
+        </form>
+        <div class="back-link">
+            <a href="/"><i class="fas fa-arrow-left"></i> वापस जाएं</a>
+        </div>
+    </div>
+</body>
+</html>
