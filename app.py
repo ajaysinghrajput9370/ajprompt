@@ -1,26 +1,15 @@
 # ==========================================
-# app.py
+# app.py - Render.com के लिए Modified
 # ==========================================
 
 import os
 import base64
 import requests
 from datetime import datetime
-
-from flask import (
-    Flask,
-    render_template,
-    request,
-    redirect,
-    url_for,
-    jsonify
-)
-
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from database import init_db, SessionLocal, Prompt
 
-
 app = Flask(__name__)
-
 
 # ==========================================
 # DATABASE INIT
@@ -28,9 +17,8 @@ app = Flask(__name__)
 
 init_db()
 
-
 # ==========================================
-# GITHUB SETTINGS
+# GITHUB SETTINGS (Render Environment Variables se)
 # ==========================================
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -45,7 +33,6 @@ GITHUB_BRANCH = os.getenv("GITHUB_BRANCH", "main")
 
 @app.route("/")
 def home():
-    """User side - shows all published prompts"""
     db = SessionLocal()
     prompts = db.query(Prompt).filter(Prompt.is_active == True).order_by(Prompt.created_at.desc()).all()
     db.close()
@@ -53,12 +40,11 @@ def home():
 
 
 # ==========================================
-# API - GET PROMPTS (for AJAX)
+# API - GET PROMPTS
 # ==========================================
 
 @app.route("/api/prompts")
 def api_prompts():
-    """JSON API for prompts"""
     db = SessionLocal()
     prompts = db.query(Prompt).filter(Prompt.is_active == True).order_by(Prompt.created_at.desc()).all()
     db.close()
@@ -83,7 +69,6 @@ def api_prompts():
 
 @app.route("/prompt/<int:prompt_id>")
 def prompt_detail(prompt_id):
-    """Single prompt detail page"""
     db = SessionLocal()
     prompt = db.query(Prompt).filter(
         Prompt.id == prompt_id,
@@ -103,7 +88,6 @@ def prompt_detail(prompt_id):
 
 @app.route("/admin")
 def admin():
-    """Admin panel - Add/Delete prompts"""
     db = SessionLocal()
     prompts = db.query(Prompt).order_by(Prompt.created_at.desc()).all()
     db.close()
@@ -115,7 +99,6 @@ def admin():
 # ==========================================
 
 def upload_to_github(file):
-    """Upload media file to GitHub repository"""
     if not GITHUB_TOKEN:
         raise Exception("GITHUB_TOKEN environment variable missing")
     if not GITHUB_USERNAME:
@@ -123,24 +106,15 @@ def upload_to_github(file):
     if not GITHUB_REPO:
         raise Exception("GITHUB_REPO environment variable missing")
     
-    # File name
     original_name = file.filename
     if not original_name:
         raise Exception("Invalid file name")
     
-    # Secure filename
     filename = original_name.replace(" ", "_")
-    
-    # Folder in GitHub
     github_path = f"uploads/prompts/{filename}"
-    
-    # Read file
     file_data = file.read()
-    
-    # Convert to Base64
     encoded_data = base64.b64encode(file_data).decode("utf-8")
     
-    # GitHub API
     api_url = f"https://api.github.com/repos/{GITHUB_USERNAME}/{GITHUB_REPO}/contents/{github_path}"
     
     headers = {
@@ -159,9 +133,7 @@ def upload_to_github(file):
     if response.status_code not in [200, 201]:
         raise Exception(f"GitHub upload failed: {response.text}")
     
-    # GitHub Raw URL
     raw_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{GITHUB_REPO}/{GITHUB_BRANCH}/{github_path}"
-    
     return raw_url
 
 
@@ -171,14 +143,12 @@ def upload_to_github(file):
 
 @app.route("/admin/add-prompt", methods=["POST"])
 def add_prompt():
-    """Add new prompt with media"""
     title = request.form.get("title", "").strip()
     prompt_text = request.form.get("prompt", "").strip()
     category = request.form.get("category", "funny").strip()
     status = request.form.get("status", "published").strip()
     media = request.files.get("media")
     
-    # Validation
     if not title:
         db = SessionLocal()
         prompts = db.query(Prompt).order_by(Prompt.created_at.desc()).all()
@@ -198,17 +168,13 @@ def add_prompt():
         return render_template("admin.html", prompts=prompts, error="Image ya video upload karo.")
     
     try:
-        # Upload media to GitHub
         media_url = upload_to_github(media)
-        
-        # Detect media type
         content_type = (media.content_type or "").lower()
         if content_type.startswith("video/"):
             media_type = "video"
         else:
             media_type = "image"
         
-        # Save database
         db = SessionLocal()
         new_prompt = Prompt(
             title=title,
@@ -242,7 +208,6 @@ def add_prompt():
 
 @app.route("/admin/delete-prompt/<int:prompt_id>", methods=["POST"])
 def delete_prompt(prompt_id):
-    """Delete a prompt (soft delete)"""
     db = SessionLocal()
     prompt = db.query(Prompt).filter(Prompt.id == prompt_id).first()
     
@@ -255,8 +220,11 @@ def delete_prompt(prompt_id):
 
 
 # ==========================================
-# RUN
+# RUN - Render ke liye
 # ==========================================
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    # Render pe production mode me gunicorn chalta hai
+    # Local development ke liye
+    port = int(os.getenv("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
