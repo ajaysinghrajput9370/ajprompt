@@ -1,5 +1,5 @@
 # ==========================================
-# app.py - Complete with Hidden Admin & Mobile Friendly
+# app.py - Complete with Error Handling
 # ==========================================
 
 import os
@@ -22,7 +22,7 @@ app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here-change-in-product
 init_db()
 
 # ==========================================
-# GITHUB SETTINGS
+# GITHUB SETTINGS (with fallback)
 # ==========================================
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -31,7 +31,7 @@ GITHUB_REPO = os.getenv("GITHUB_REPO")
 GITHUB_BRANCH = os.getenv("GITHUB_BRANCH", "main")
 
 # ==========================================
-# ADMIN CREDENTIALS (Hardcoded)
+# ADMIN CREDENTIALS
 # ==========================================
 
 ADMIN_PHONE = "9355491854"
@@ -132,7 +132,7 @@ def prompt_detail(prompt_id):
     return render_template("prompt_detail.html", prompt=prompt)
 
 # ==========================================
-# ADMIN PANEL (Hidden - Only via /admin-login)
+# ADMIN PANEL
 # ==========================================
 
 @app.route("/admin")
@@ -144,49 +144,55 @@ def admin():
     return render_template("admin.html", prompts=prompts)
 
 # ==========================================
-# UPLOAD FILE TO GITHUB
+# UPLOAD FILE TO GITHUB (with better error handling)
 # ==========================================
 
 def upload_to_github(file):
+    # Check if GitHub credentials are available
     if not GITHUB_TOKEN:
-        raise Exception("GITHUB_TOKEN environment variable missing")
-    if not GITHUB_USERNAME:
-        raise Exception("GITHUB_USERNAME environment variable missing")
-    if not GITHUB_REPO:
-        raise Exception("GITHUB_REPO environment variable missing")
+        # If no token, use placeholder image
+        return None
     
-    original_name = file.filename
-    if not original_name:
-        raise Exception("Invalid file name")
+    if not GITHUB_USERNAME or not GITHUB_REPO:
+        return None
     
-    filename = original_name.replace(" ", "_")
-    github_path = f"uploads/prompts/{filename}"
-    file_data = file.read()
-    encoded_data = base64.b64encode(file_data).decode("utf-8")
-    
-    api_url = f"https://api.github.com/repos/{GITHUB_USERNAME}/{GITHUB_REPO}/contents/{github_path}"
-    
-    headers = {
-        "Authorization": f"Bearer {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github+json"
-    }
-    
-    data = {
-        "message": f"Upload prompt media: {filename}",
-        "content": encoded_data,
-        "branch": GITHUB_BRANCH
-    }
-    
-    response = requests.put(api_url, headers=headers, json=data, timeout=60)
-    
-    if response.status_code not in [200, 201]:
-        raise Exception(f"GitHub upload failed: {response.text}")
-    
-    raw_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{GITHUB_REPO}/{GITHUB_BRANCH}/{github_path}"
-    return raw_url
+    try:
+        original_name = file.filename
+        if not original_name:
+            return None
+        
+        filename = original_name.replace(" ", "_")
+        github_path = f"uploads/prompts/{filename}"
+        file_data = file.read()
+        encoded_data = base64.b64encode(file_data).decode("utf-8")
+        
+        api_url = f"https://api.github.com/repos/{GITHUB_USERNAME}/{GITHUB_REPO}/contents/{github_path}"
+        
+        headers = {
+            "Authorization": f"Bearer {GITHUB_TOKEN}",
+            "Accept": "application/vnd.github+json"
+        }
+        
+        data = {
+            "message": f"Upload prompt media: {filename}",
+            "content": encoded_data,
+            "branch": GITHUB_BRANCH
+        }
+        
+        response = requests.put(api_url, headers=headers, json=data, timeout=60)
+        
+        if response.status_code not in [200, 201]:
+            return None
+        
+        raw_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{GITHUB_REPO}/{GITHUB_BRANCH}/{github_path}"
+        return raw_url
+        
+    except Exception as e:
+        print(f"GitHub upload error: {e}")
+        return None
 
 # ==========================================
-# ADD PROMPT (ADMIN)
+# ADD PROMPT (ADMIN) - with fallback
 # ==========================================
 
 @app.route("/admin/add-prompt", methods=["POST"])
@@ -210,19 +216,25 @@ def add_prompt():
         db.close()
         return render_template("admin.html", prompts=prompts, error="Prompt required hai.")
     
-    if not media or not media.filename:
-        db = SessionLocal()
-        prompts = db.query(Prompt).order_by(Prompt.created_at.desc()).all()
-        db.close()
-        return render_template("admin.html", prompts=prompts, error="Image ya video upload karo.")
-    
     try:
-        media_url = upload_to_github(media)
-        content_type = (media.content_type or "").lower()
-        if content_type.startswith("video/"):
-            media_type = "video"
+        # Try to upload media to GitHub
+        media_url = None
+        media_type = "image"
+        
+        if media and media.filename:
+            # Try GitHub upload
+            uploaded_url = upload_to_github(media)
+            if uploaded_url:
+                media_url = uploaded_url
+                content_type = (media.content_type or "").lower()
+                if content_type.startswith("video/"):
+                    media_type = "video"
+            else:
+                # Fallback: use placeholder image
+                media_url = f"https://picsum.photos/seed/{title.replace(' ', '')}/400/225"
         else:
-            media_type = "image"
+            # No media uploaded, use placeholder
+            media_url = f"https://picsum.photos/seed/{title.replace(' ', '')}/400/225"
         
         db = SessionLocal()
         new_prompt = Prompt(
@@ -242,7 +254,11 @@ def add_prompt():
         prompts = db.query(Prompt).order_by(Prompt.created_at.desc()).all()
         db.close()
         
-        return render_template("admin.html", prompts=prompts, message="✅ Prompt successfully add ho gaya!")
+        message = "✅ Prompt successfully add ho gaya!"
+        if not GITHUB_TOKEN:
+            message += " (Note: GitHub token missing, using placeholder image)"
+        
+        return render_template("admin.html", prompts=prompts, message=message)
         
     except Exception as e:
         db = SessionLocal()
