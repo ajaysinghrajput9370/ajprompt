@@ -1,33 +1,28 @@
 # ==========================================
-# app.py - Render.com ke liye Modified (Python 3.11 compatible)
+# app.py - Complete with Hidden Admin & Mobile Friendly
 # ==========================================
 
 import os
-import sys
 import base64
 import requests
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from functools import wraps
 
 # Database import
 from database import init_db, SessionLocal, Prompt
 
 app = Flask(__name__)
+app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here-change-in-production")
 
 # ==========================================
 # DATABASE INIT
 # ==========================================
 
-# Render Disk path - agar available ho toh
-DATABASE_DIR = "/var/lib/database"
-if os.path.exists(DATABASE_DIR):
-    os.makedirs(DATABASE_DIR, exist_ok=True)
-    os.environ['DATABASE_PATH'] = os.path.join(DATABASE_DIR, "database.db")
-
 init_db()
 
 # ==========================================
-# GITHUB SETTINGS (Render Environment Variables se)
+# GITHUB SETTINGS
 # ==========================================
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -35,6 +30,51 @@ GITHUB_USERNAME = os.getenv("GITHUB_USERNAME")
 GITHUB_REPO = os.getenv("GITHUB_REPO")
 GITHUB_BRANCH = os.getenv("GITHUB_BRANCH", "main")
 
+# ==========================================
+# ADMIN CREDENTIALS (Hardcoded)
+# ==========================================
+
+ADMIN_PHONE = "9355491854"
+ADMIN_PASSWORD = "Aja@y123"
+
+# ==========================================
+# LOGIN DECORATOR
+# ==========================================
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('admin_logged_in'):
+            return redirect(url_for('admin_login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# ==========================================
+# ADMIN LOGIN
+# ==========================================
+
+@app.route("/admin-login", methods=["GET", "POST"])
+def admin_login():
+    if request.method == "POST":
+        phone = request.form.get("phone", "").strip()
+        password = request.form.get("password", "").strip()
+        
+        if phone == ADMIN_PHONE and password == ADMIN_PASSWORD:
+            session['admin_logged_in'] = True
+            return redirect(url_for('admin'))
+        else:
+            return render_template("admin_login.html", error="❌ गलत ID या पासवर्ड!")
+    
+    return render_template("admin_login.html")
+
+# ==========================================
+# ADMIN LOGOUT
+# ==========================================
+
+@app.route("/admin-logout")
+def admin_logout():
+    session.pop('admin_logged_in', None)
+    return redirect(url_for('home'))
 
 # ==========================================
 # HOME - USER SIDE
@@ -49,7 +89,6 @@ def home():
         return render_template("index.html", prompts=prompts)
     except Exception as e:
         return f"Database error: {e}", 500
-
 
 # ==========================================
 # API - GET PROMPTS
@@ -67,13 +106,12 @@ def api_prompts():
             "id": p.id,
             "title": p.title,
             "prompt": p.prompt,
-            "category": p.category,
+            "category": p.category if hasattr(p, 'category') else "funny",
             "media_type": p.media_type,
             "media_url": p.media_url,
-            "status": p.status
+            "status": p.status if hasattr(p, 'status') else "published"
         })
     return jsonify(result)
-
 
 # ==========================================
 # PROMPT DETAIL
@@ -93,18 +131,17 @@ def prompt_detail(prompt_id):
     
     return render_template("prompt_detail.html", prompt=prompt)
 
-
 # ==========================================
-# ADMIN PANEL
+# ADMIN PANEL (Hidden - Only via /admin-login)
 # ==========================================
 
 @app.route("/admin")
+@login_required
 def admin():
     db = SessionLocal()
     prompts = db.query(Prompt).order_by(Prompt.created_at.desc()).all()
     db.close()
     return render_template("admin.html", prompts=prompts)
-
 
 # ==========================================
 # UPLOAD FILE TO GITHUB
@@ -122,19 +159,11 @@ def upload_to_github(file):
     if not original_name:
         raise Exception("Invalid file name")
     
-    # Secure filename
     filename = original_name.replace(" ", "_")
-    
-    # Folder in GitHub
     github_path = f"uploads/prompts/{filename}"
-    
-    # Read file
     file_data = file.read()
-    
-    # Convert to Base64
     encoded_data = base64.b64encode(file_data).decode("utf-8")
     
-    # GitHub API
     api_url = f"https://api.github.com/repos/{GITHUB_USERNAME}/{GITHUB_REPO}/contents/{github_path}"
     
     headers = {
@@ -153,16 +182,15 @@ def upload_to_github(file):
     if response.status_code not in [200, 201]:
         raise Exception(f"GitHub upload failed: {response.text}")
     
-    # GitHub Raw URL
     raw_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{GITHUB_REPO}/{GITHUB_BRANCH}/{github_path}"
     return raw_url
-
 
 # ==========================================
 # ADD PROMPT (ADMIN)
 # ==========================================
 
 @app.route("/admin/add-prompt", methods=["POST"])
+@login_required
 def add_prompt():
     title = request.form.get("title", "").strip()
     prompt_text = request.form.get("prompt", "").strip()
@@ -222,12 +250,12 @@ def add_prompt():
         db.close()
         return render_template("admin.html", prompts=prompts, error=str(e))
 
-
 # ==========================================
 # DELETE PROMPT (ADMIN)
 # ==========================================
 
 @app.route("/admin/delete-prompt/<int:prompt_id>", methods=["POST"])
+@login_required
 def delete_prompt(prompt_id):
     db = SessionLocal()
     prompt = db.query(Prompt).filter(Prompt.id == prompt_id).first()
@@ -239,9 +267,8 @@ def delete_prompt(prompt_id):
     db.close()
     return redirect(url_for("admin"))
 
-
 # ==========================================
-# RUN - Render ke liye
+# RUN
 # ==========================================
 
 if __name__ == "__main__":
