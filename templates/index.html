@@ -1,0 +1,503 @@
+<!-- ========================================== -->
+<!-- templates/index.html - User Side -->
+<!-- ========================================== -->
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎬 AI प्रॉम्प्ट लाइब्रेरी</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #f5f1e7;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .page {
+            max-width: 1100px;
+            width: 100%;
+        }
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem 1rem;
+            border-bottom: 4px solid #c9b89b;
+            padding-bottom: 0.8rem;
+            margin-bottom: 1.8rem;
+        }
+        .main-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3d2c1a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .admin-btn {
+            background: #2f2214;
+            border: none;
+            color: #f6efe5;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.5rem 1.4rem;
+            border-radius: 60px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #4d3d29;
+            transition: 0.15s;
+            text-decoration: none;
+        }
+        .admin-btn:hover {
+            background: #42321e;
+            color: #f6efe5;
+        }
+        .filter-bar {
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.8rem;
+            background: #fcf9f4;
+            padding: 0.6rem 1rem;
+            border-radius: 60px;
+            border: 1px solid #e4d9c8;
+        }
+        .filter-btn {
+            background: transparent;
+            border: none;
+            padding: 0.4rem 1.2rem;
+            border-radius: 40px;
+            font-weight: 500;
+            color: #5f4a30;
+            cursor: pointer;
+            transition: 0.1s;
+            font-size: 0.9rem;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: #dbcfbb;
+            color: #2b1e0e;
+        }
+        .filter-btn.active {
+            background: #2f2214;
+            color: #f6efe5;
+        }
+        .prompt-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.8rem;
+        }
+        .prompt-card {
+            background: #fcf9f4;
+            border-radius: 28px;
+            border: 1px solid #e4d9c8;
+            overflow: hidden;
+            transition: box-shadow 0.2s, transform 0.1s;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+        .prompt-card:hover {
+            box-shadow: 0 16px 32px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .card-media {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: #e8e0d2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #8b7a62;
+            overflow: hidden;
+            position: relative;
+        }
+        .card-media img, .card-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .card-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(47, 34, 20, 0.85);
+            color: #f6efe5;
+            font-size: 0.7rem;
+            padding: 0.2rem 1rem;
+            border-radius: 40px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+        }
+        .card-body {
+            padding: 1rem 1.2rem 1.2rem;
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 650;
+            color: #2b1e0e;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .card-title .emoji {
+            font-size: 1.4rem;
+        }
+        .card-meta {
+            display: flex;
+            gap: 0.8rem;
+            margin-top: 0.4rem;
+            font-size: 0.8rem;
+            color: #7a6449;
+            flex-wrap: wrap;
+        }
+        .card-meta .tag {
+            background: #e7decb;
+            padding: 0.1rem 0.8rem;
+            border-radius: 40px;
+        }
+        .card-prompt-preview {
+            margin-top: 0.6rem;
+            font-size: 0.85rem;
+            color: #5f4a30;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+            opacity: 0.8;
+        }
+        .empty-state {
+            grid-column: 1 / -1;
+            background: #f2ede3;
+            border-radius: 40px;
+            padding: 3rem 1.5rem;
+            text-align: center;
+            color: #5f4a30;
+            border: 2px dashed #d6c9b4;
+            font-size: 1.2rem;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            opacity: 0.4;
+            display: block;
+            margin-bottom: 0.8rem;
+        }
+        .footer-note {
+            margin-top: 2.5rem;
+            color: #5a4b34;
+            text-align: center;
+            font-size: 0.85rem;
+            border-top: 1px solid #dacfbc;
+            padding-top: 1.8rem;
+            width: 100%;
+        }
+        @media (max-width: 480px) {
+            .prompt-grid {
+                grid-template-columns: 1fr;
+            }
+            .main-header h1 {
+                font-size: 1.4rem;
+            }
+            .filter-bar {
+                border-radius: 30px;
+                padding: 0.4rem 0.8rem;
+                gap: 0.3rem;
+            }
+            .filter-btn {
+                font-size: 0.75rem;
+                padding: 0.2rem 0.8rem;
+            }
+        }
+        /* Detail Modal */
+        #detailModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        #detailModal .modal-box {
+            background: #fcf9f4;
+            max-width: 700px;
+            width: 100%;
+            border-radius: 32px;
+            padding: 1.8rem;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        #detailModal .modal-box .close-btn {
+            position: sticky;
+            top: 0;
+            float: right;
+            background: transparent;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #5f4a30;
+        }
+        #detailModal .modal-box .detail-media {
+            width: 100%;
+            max-height: 300px;
+            border-radius: 16px;
+            background: #000;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        #detailModal .modal-box .detail-media img,
+        #detailModal .modal-box .detail-media video {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        #detailModal .modal-box .prompt-text {
+            background: #f2ede3;
+            border-radius: 18px;
+            padding: 1rem;
+            border: 1px solid #ded3bf;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+        .copy-btn {
+            margin-top: 1.2rem;
+            background: #2f2214;
+            border: none;
+            color: #f6efe5;
+            font-weight: 600;
+            padding: 0.6rem 2rem;
+            border-radius: 60px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #4d3d29;
+            transition: 0.15s;
+        }
+        .copy-btn:hover {
+            background: #42321e;
+        }
+        .copy-status {
+            margin-left: 0.8rem;
+            font-size: 0.9rem;
+            color: #2d6a4f;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <header class="main-header">
+        <h1>
+            <span>🎬</span> AI प्रॉम्प्ट लाइब्रेरी
+            <span style="font-weight:400;font-size:1rem;color:#5f4a30;" id="countDisplay">(0)</span>
+        </h1>
+        <a href="/admin" class="admin-btn"><i class="fas fa-user-cog"></i> एडमिन</a>
+    </header>
+
+    <div class="filter-bar" id="filterBar">
+        <button class="filter-btn active" data-filter="all">सभी</button>
+        <button class="filter-btn" data-filter="image">🖼️ Image</button>
+        <button class="filter-btn" data-filter="video">🎥 Video</button>
+        <button class="filter-btn" data-filter="funny">😂 Funny</button>
+        <button class="filter-btn" data-filter="animal">🐾 Animal</button>
+        <button class="filter-btn" data-filter="vlog">📱 Vlog</button>
+    </div>
+
+    <div class="prompt-grid" id="promptGrid">
+        {% if prompts %}
+            {% for prompt in prompts %}
+            <div class="prompt-card" onclick="openDetail({{ prompt.id }})">
+                <div class="card-media">
+                    {% if prompt.media_type == 'video' %}
+                        <video src="{{ prompt.media_url }}" muted></video>
+                    {% else %}
+                        <img src="{{ prompt.media_url }}" alt="{{ prompt.title }}" loading="lazy">
+                    {% endif %}
+                    <span class="card-badge">{{ prompt.media_type }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="card-title">
+                        <span class="emoji">
+                            {% if prompt.category == 'funny' %}😂
+                            {% elif prompt.category == 'animal' %}🐾
+                            {% elif prompt.category == 'vlog' %}📱
+                            {% elif prompt.category == 'image' %}🖼️
+                            {% elif prompt.category == 'video' %}🎥
+                            {% else %}📌
+                            {% endif %}
+                        </span>
+                        {{ prompt.title }}
+                    </div>
+                    <div class="card-meta">
+                        <span class="tag">{{ prompt.category }}</span>
+                        <span>{{ prompt.media_type }}</span>
+                    </div>
+                    <div class="card-prompt-preview">{{ prompt.prompt[:120] }}{% if prompt.prompt|length > 120 %}...{% endif %}</div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-fire"></i>
+                🔥 AI Prompts Coming Soon<br>
+                <span style="font-size:1rem;opacity:0.7;">नए AI Image और Video Prompts जल्द ही यहाँ उपलब्ध होंगे।</span>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="footer-note">
+        <span>✨ एक क्लिक में कॉपी · हर प्रॉम्प्ट डिटेल के साथ</span><br>
+        <small>📱 AI वीडियो / इमेज जनरेशन प्रॉम्प्ट्स</small>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div id="detailModal">
+    <div class="modal-box">
+        <button class="close-btn" id="closeModal">&times;</button>
+        <div id="detailContent"></div>
+    </div>
+</div>
+
+<script>
+    // Prompts data from server (for modal)
+    const promptsData = [
+        {% for prompt in prompts %}
+        {
+            id: {{ prompt.id }},
+            title: "{{ prompt.title|safe }}",
+            prompt: `{{ prompt.prompt|safe }}`,
+            category: "{{ prompt.category }}",
+            media_type: "{{ prompt.media_type }}",
+            media_url: "{{ prompt.media_url|safe }}"
+        },
+        {% endfor %}
+    ];
+
+    function openDetail(id) {
+        const p = promptsData.find(item => item.id === id);
+        if (!p) return;
+
+        const modal = document.getElementById('detailModal');
+        const content = document.getElementById('detailContent');
+
+        const mediaHtml = p.media_type === 'video' ?
+            `<video src="${p.media_url}" controls></video>` :
+            `<img src="${p.media_url}" alt="${p.title}">`;
+
+        content.innerHTML = `
+            <h2 style="font-size:1.6rem;color:#2b1e0e;margin-bottom:0.3rem;">${p.title}</h2>
+            <div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1rem;font-size:0.85rem;color:#7a6449;">
+                <span style="background:#e7decb;padding:0.1rem 0.8rem;border-radius:40px;">${p.category}</span>
+                <span style="background:#e7decb;padding:0.1rem 0.8rem;border-radius:40px;">${p.media_type}</span>
+            </div>
+            <div class="detail-media">${mediaHtml}</div>
+            <div class="prompt-text">${p.prompt}</div>
+            <button class="copy-btn" onclick="copyPrompt(${p.id})">
+                <i class="fas fa-copy"></i> प्रॉम्प्ट कॉपी करें
+            </button>
+            <span class="copy-status" id="copyStatus"></span>
+        `;
+
+        modal.style.display = 'flex';
+    }
+
+    function copyPrompt(id) {
+        const p = promptsData.find(item => item.id === id);
+        if (!p) return;
+        const text = p.prompt;
+        const status = document.getElementById('copyStatus');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                status.textContent = '✅ कॉपी हो गया!';
+                setTimeout(() => status.textContent = '', 2000);
+            }).catch(() => fallbackCopy(text, status));
+        } else {
+            fallbackCopy(text, status);
+        }
+    }
+
+    function fallbackCopy(text, status) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            status.textContent = '✅ कॉपी हो गया!';
+            setTimeout(() => status.textContent = '', 2000);
+        } catch(e) {
+            alert('कॉपी नहीं हो पाया, मैन्युअल कॉपी करें।');
+        }
+        document.body.removeChild(ta);
+    }
+
+    // Close modal
+    document.getElementById('closeModal').addEventListener('click', function() {
+        document.getElementById('detailModal').style.display = 'none';
+    });
+    document.getElementById('detailModal').addEventListener('click', function(e) {
+        if (e.target === this) this.style.display = 'none';
+    });
+
+    // Filter
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            const filter = this.dataset.filter;
+            const cards = document.querySelectorAll('.prompt-card');
+            if (filter === 'all') {
+                cards.forEach(c => c.style.display = 'block');
+            } else {
+                cards.forEach(c => {
+                    const tags = c.querySelector('.card-meta .tag');
+                    if (tags && tags.textContent === filter) {
+                        c.style.display = 'block';
+                    } else {
+                        c.style.display = 'none';
+                    }
+                });
+            }
+            // Update count
+            const visible = document.querySelectorAll('.prompt-card[style*="display: block"]');
+            const countDisplay = document.getElementById('countDisplay');
+            countDisplay.textContent = `(${visible.length || 0})`;
+        });
+    });
+
+    // Update count on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const visible = document.querySelectorAll('.prompt-card');
+        const countDisplay = document.getElementById('countDisplay');
+        countDisplay.textContent = `(${visible.length})`;
+    });
+</script>
+</body>
+</html>
