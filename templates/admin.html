@@ -1,177 +1,299 @@
+<!-- ========================================== -->
+<!-- templates/admin.html - Admin Panel -->
+<!-- ========================================== -->
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Admin - AI Prompt Library</title>
-
+    <title>🔧 एडमिन - AI प्रॉम्प्ट लाइब्रेरी</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
-            box-sizing: border-box;
-        }
-
-        body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f7fb;
-            color: #222;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
         }
-
-        .container {
-            max-width: 700px;
-            margin: 40px auto;
-            padding: 20px;
+        body {
+            background: #f5f1e7;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
         }
-
-        .card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 25px rgba(0,0,0,0.08);
-        }
-
-        h1 {
-            margin-top: 0;
-        }
-
-        label {
-            display: block;
-            margin-top: 18px;
-            margin-bottom: 7px;
-            font-weight: bold;
-        }
-
-        input,
-        textarea {
+        .page {
+            max-width: 1100px;
             width: 100%;
-            padding: 13px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 15px;
         }
-
-        textarea {
-            min-height: 180px;
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.8rem 1rem;
+            border-bottom: 4px solid #c9b89b;
+            padding-bottom: 0.8rem;
+            margin-bottom: 1.8rem;
+        }
+        .main-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3d2c1a;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .back-btn {
+            background: #2f2214;
+            border: none;
+            color: #f6efe5;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.5rem 1.4rem;
+            border-radius: 60px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #4d3d29;
+            transition: 0.15s;
+            text-decoration: none;
+        }
+        .back-btn:hover {
+            background: #42321e;
+            color: #f6efe5;
+        }
+        .admin-panel {
+            background: #fcf9f4;
+            border-radius: 32px;
+            border: 1px solid #e4d9c8;
+            padding: 1.8rem;
+            margin-bottom: 2rem;
+        }
+        .admin-panel h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2b1e0e;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            margin-bottom: 1.2rem;
+        }
+        .form-row label {
+            font-weight: 600;
+            color: #3d2c1a;
+            font-size: 0.95rem;
+        }
+        .form-row input, .form-row textarea, .form-row select {
+            padding: 0.7rem 1rem;
+            border-radius: 18px;
+            border: 1px solid #d6c9b4;
+            background: #fcf9f4;
+            font-size: 0.95rem;
+            transition: 0.1s;
+            width: 100%;
+        }
+        .form-row input:focus, .form-row textarea:focus, .form-row select:focus {
+            outline: 2px solid #b8a182;
+            border-color: transparent;
+        }
+        .form-row textarea {
+            min-height: 150px;
             resize: vertical;
         }
-
-        input[type="file"] {
-            padding: 10px;
-            background: #fafafa;
+        .form-row-inline {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
         }
-
-        button {
-            width: 100%;
-            margin-top: 25px;
-            padding: 14px;
+        @media (max-width: 480px) {
+            .form-row-inline {
+                grid-template-columns: 1fr;
+            }
+        }
+        .btn-primary {
+            background: #2f2214;
             border: none;
-            border-radius: 8px;
-            background: #1565c0;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
+            color: #f6efe5;
+            font-weight: 600;
+            padding: 0.6rem 2rem;
+            border-radius: 60px;
             cursor: pointer;
+            border: 1px solid #4d3d29;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
         }
-
-        button:hover {
-            background: #0d47a1;
+        .btn-primary:hover {
+            background: #42321e;
         }
-
-        .note {
-            margin-top: 15px;
-            padding: 12px;
-            background: #f1f5ff;
-            border-radius: 8px;
-            font-size: 14px;
+        .btn-danger {
+            background: #8b2f2f;
+            border: none;
+            color: #f6efe5;
+            font-weight: 600;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            cursor: pointer;
+            border: 1px solid #6b1f1f;
+            transition: 0.15s;
+            font-size: 0.8rem;
         }
-
-        .message {
-            margin-bottom: 15px;
-            padding: 12px;
-            border-radius: 8px;
-            background: #e8f5e9;
-            color: #1b5e20;
+        .btn-danger:hover {
+            background: #a13232;
         }
-
-        .error {
-            background: #ffebee;
-            color: #b71c1c;
+        .status-msg {
+            margin-top: 0.8rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .status-msg.success {
+            color: #2d6a4f;
+        }
+        .status-msg.error {
+            color: #a13232;
+        }
+        .prompt-list {
+            margin-top: 2rem;
+        }
+        .prompt-list h3 {
+            font-size: 1.1rem;
+            color: #3d2c1a;
+            margin-bottom: 1rem;
+        }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fcf9f4;
+            padding: 0.8rem 1.2rem;
+            border-radius: 18px;
+            border: 1px solid #e4d9c8;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .list-item .info {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .list-item .info .badge {
+            background: #e7decb;
+            padding: 0.1rem 0.6rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+        }
+        .list-item .actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .empty-list {
+            color: #7a6449;
+            font-style: italic;
+            padding: 1rem;
+            text-align: center;
+            background: #f2ede3;
+            border-radius: 18px;
         }
     </style>
 </head>
-
 <body>
+<div class="page">
+    <header class="main-header">
+        <h1>
+            <span>🔧</span> एडमिन पैनल
+        </h1>
+        <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> वापस जाएं</a>
+    </header>
 
-<div class="container">
-
-    <div class="card">
-
-        <h1>➕ Add New Prompt</h1>
-
-        {% if message %}
-            <div class="message">
-                {{ message }}
+    <!-- Add Prompt Form -->
+    <div class="admin-panel">
+        <h2><i class="fas fa-plus-circle"></i> नया प्रॉम्प्ट जोड़ें</h2>
+        <form action="/admin/add-prompt" method="POST" enctype="multipart/form-data">
+            <div class="form-row">
+                <label for="title">शीर्षक (Title) *</label>
+                <input type="text" id="title" name="title" placeholder="जैसे: हाथी का स्कूल" required>
             </div>
-        {% endif %}
-
-        {% if error %}
-            <div class="message error">
-                {{ error }}
+            <div class="form-row">
+                <label for="prompt">प्रॉम्प्ट (Prompt) *</label>
+                <textarea id="prompt" name="prompt" placeholder="पूरा प्रॉम्प्ट यहाँ लिखें..." required></textarea>
             </div>
-        {% endif %}
-
-        <form
-            action="/admin/add-prompt"
-            method="POST"
-            enctype="multipart/form-data"
-        >
-
-            <label>Title</label>
-
-            <input
-                type="text"
-                name="title"
-                placeholder="Example: Realistic Dog Vlogger"
-                required
-            >
-
-
-            <label>Prompt</label>
-
-            <textarea
-                name="prompt"
-                placeholder="Yahan complete AI image/video prompt likho..."
-                required
-            ></textarea>
-
-
-            <label>Image / Video</label>
-
-            <input
-                type="file"
-                name="media"
-                accept="image/*,video/*"
-                required
-            >
-
-
-            <button type="submit">
-                🚀 Add Prompt
-            </button>
-
+            <div class="form-row-inline">
+                <div class="form-row">
+                    <label for="category">कैटेगरी (Category)</label>
+                    <select id="category" name="category">
+                        <option value="funny">😂 Funny</option>
+                        <option value="animal">🐾 Animal</option>
+                        <option value="vlog">📱 Vlog</option>
+                        <option value="image">🖼️ Image</option>
+                        <option value="video">🎥 Video</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="status">स्टेटस (Status)</label>
+                    <select id="status" name="status">
+                        <option value="published">📢 Published</option>
+                        <option value="draft">📝 Draft</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="media">Media (Image/Video) *</label>
+                <input type="file" id="media" name="media" accept="image/*,video/*" required>
+            </div>
+            <button type="submit" class="btn-primary"><i class="fas fa-save"></i> प्रॉम्प्ट जोड़ें</button>
+            <div id="statusMsg">
+                {% if message %}
+                    <div class="status-msg success">{{ message }}</div>
+                {% endif %}
+                {% if error %}
+                    <div class="status-msg error">{{ error }}</div>
+                {% endif %}
+            </div>
         </form>
-
-        <div class="note">
-            💡 New prompt add karte hi woh user website par
-            sabse upar दिखाई देगा।
-            Latest 5 prompts automatically
-            <b>🔥 TRENDING</b> mein दिखाई देंगे।
-        </div>
-
     </div>
 
+    <!-- Existing Prompts List -->
+    <div class="prompt-list">
+        <h3><i class="fas fa-list"></i> मौजूदा प्रॉम्प्ट्स ({{ prompts|length }})</h3>
+        {% if prompts %}
+            {% for prompt in prompts %}
+            <div class="list-item">
+                <div class="info">
+                    <strong>{{ prompt.title }}</strong>
+                    <span class="badge">{{ prompt.category }}</span>
+                    <span class="badge">{{ prompt.media_type }}</span>
+                    <span class="badge" style="background: {% if prompt.status == 'published' %}#b8d9b0{% else %}#d9c8b0{% endif %};">
+                        {{ prompt.status }}
+                    </span>
+                    <span style="font-size:0.8rem;color:#7a6449;">
+                        {{ prompt.created_at.strftime('%Y-%m-%d') if prompt.created_at else '' }}
+                    </span>
+                </div>
+                <div class="actions">
+                    <form action="/admin/delete-prompt/{{ prompt.id }}" method="POST" onsubmit="return confirm('क्या आप यह प्रॉम्प्ट हटाना चाहते हैं?');">
+                        <button type="submit" class="btn-danger"><i class="fas fa-trash"></i> हटाएं</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-list">अभी कोई प्रॉम्प्ट नहीं है। ऊपर फॉर्म से जोड़ें।</div>
+        {% endif %}
+    </div>
 </div>
-
 </body>
 </html>
