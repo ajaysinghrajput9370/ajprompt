@@ -1,0 +1,192 @@
+<!-- ========================================== -->
+<!-- templates/prompt_detail.html - Single Prompt Page -->
+<!-- ========================================== -->
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ prompt.title }} - AI प्रॉम्प्ट</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: #f5f1e7;
+            padding: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .page {
+            max-width: 600px;
+            width: 100%;
+        }
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #7a6449;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .back-link:hover {
+            color: #3d2c1a;
+        }
+        .detail-card {
+            background: #fcf9f4;
+            border-radius: 28px;
+            border: 1px solid #e4d9c8;
+            padding: 1.2rem;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+        }
+        .detail-card h1 {
+            font-size: 1.4rem;
+            color: #2b1e0e;
+            margin-bottom: 0.3rem;
+        }
+        .detail-meta {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+            font-size: 0.8rem;
+            color: #7a6449;
+        }
+        .detail-meta span {
+            background: #e7decb;
+            padding: 0.1rem 0.8rem;
+            border-radius: 40px;
+        }
+        .detail-media {
+            width: 100%;
+            max-height: 300px;
+            border-radius: 16px;
+            background: #000;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        .detail-media img, .detail-media video {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+        }
+        .prompt-text {
+            background: #f2ede3;
+            border-radius: 16px;
+            padding: 1rem;
+            border: 1px solid #ded3bf;
+            white-space: pre-wrap;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .copy-btn {
+            margin-top: 1rem;
+            background: #2f2214;
+            border: none;
+            color: #f6efe5;
+            font-weight: 600;
+            padding: 0.6rem 2rem;
+            border-radius: 60px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #4d3d29;
+            transition: 0.15s;
+            font-size: 0.95rem;
+            width: 100%;
+            justify-content: center;
+        }
+        .copy-btn:active {
+            transform: scale(0.97);
+        }
+        .copy-status {
+            display: block;
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            color: #2d6a4f;
+        }
+        @media (max-width: 480px) {
+            .detail-card {
+                padding: 1rem;
+            }
+            .detail-card h1 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> सभी प्रॉम्प्ट्स</a>
+    
+    <div class="detail-card">
+        <h1>{{ prompt.title }}</h1>
+        <div class="detail-meta">
+            <span>{{ prompt.category if prompt.category else 'funny' }}</span>
+            <span>{{ prompt.media_type }}</span>
+            <span>{{ prompt.status if prompt.status else 'published' }}</span>
+        </div>
+        
+        <div class="detail-media">
+            {% if prompt.media_type == 'video' %}
+                <video src="{{ prompt.media_url }}" controls></video>
+            {% else %}
+                <img src="{{ prompt.media_url }}" alt="{{ prompt.title }}">
+            {% endif %}
+        </div>
+        
+        <div class="prompt-text">{{ prompt.prompt }}</div>
+        
+        <button class="copy-btn" onclick="copyPrompt()">
+            <i class="fas fa-copy"></i> प्रॉम्प्ट कॉपी करें
+        </button>
+        <span class="copy-status" id="copyStatus"></span>
+    </div>
+</div>
+
+<script>
+    function copyPrompt() {
+        const text = document.querySelector('.prompt-text').textContent;
+        const status = document.getElementById('copyStatus');
+        
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                status.textContent = '✅ कॉपी हो गया!';
+                setTimeout(() => status.textContent = '', 2000);
+            }).catch(() => fallbackCopy(text, status));
+        } else {
+            fallbackCopy(text, status);
+        }
+    }
+    
+    function fallbackCopy(text, status) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            status.textContent = '✅ कॉपी हो गया!';
+            setTimeout(() => status.textContent = '', 2000);
+        } catch(e) {
+            alert('कॉपी नहीं हो पाया, मैन्युअल कॉपी करें।');
+        }
+        document.body.removeChild(ta);
+    }
+</script>
+</body>
+</html>
