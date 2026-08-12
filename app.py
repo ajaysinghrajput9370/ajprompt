@@ -1,7 +1,3 @@
-# ==========================================
-# app.py - Render.com के लिए Modified
-# ==========================================
-
 import os
 import base64
 import requests
@@ -11,26 +7,16 @@ from database import init_db, SessionLocal, Prompt
 
 app = Flask(__name__)
 
-# ==========================================
 # DATABASE INIT
-# ==========================================
-
 init_db()
 
-# ==========================================
-# GITHUB SETTINGS (Render Environment Variables se)
-# ==========================================
-
+# GITHUB SETTINGS
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 GITHUB_USERNAME = os.getenv("GITHUB_USERNAME")
 GITHUB_REPO = os.getenv("GITHUB_REPO")
 GITHUB_BRANCH = os.getenv("GITHUB_BRANCH", "main")
 
-
-# ==========================================
-# HOME - USER SIDE
-# ==========================================
-
+# HOME
 @app.route("/")
 def home():
     db = SessionLocal()
@@ -38,11 +24,7 @@ def home():
     db.close()
     return render_template("index.html", prompts=prompts)
 
-
-# ==========================================
-# API - GET PROMPTS
-# ==========================================
-
+# API
 @app.route("/api/prompts")
 def api_prompts():
     db = SessionLocal()
@@ -62,11 +44,7 @@ def api_prompts():
         })
     return jsonify(result)
 
-
-# ==========================================
 # PROMPT DETAIL
-# ==========================================
-
 @app.route("/prompt/<int:prompt_id>")
 def prompt_detail(prompt_id):
     db = SessionLocal()
@@ -81,11 +59,7 @@ def prompt_detail(prompt_id):
     
     return render_template("prompt_detail.html", prompt=prompt)
 
-
-# ==========================================
-# ADMIN PANEL
-# ==========================================
-
+# ADMIN
 @app.route("/admin")
 def admin():
     db = SessionLocal()
@@ -93,11 +67,7 @@ def admin():
     db.close()
     return render_template("admin.html", prompts=prompts)
 
-
-# ==========================================
-# UPLOAD FILE TO GITHUB
-# ==========================================
-
+# UPLOAD TO GITHUB
 def upload_to_github(file):
     if not GITHUB_TOKEN:
         raise Exception("GITHUB_TOKEN environment variable missing")
@@ -136,11 +106,7 @@ def upload_to_github(file):
     raw_url = f"https://raw.githubusercontent.com/{GITHUB_USERNAME}/{GITHUB_REPO}/{GITHUB_BRANCH}/{github_path}"
     return raw_url
 
-
-# ==========================================
-# ADD PROMPT (ADMIN)
-# ==========================================
-
+# ADD PROMPT
 @app.route("/admin/add-prompt", methods=["POST"])
 def add_prompt():
     title = request.form.get("title", "").strip()
@@ -201,11 +167,7 @@ def add_prompt():
         db.close()
         return render_template("admin.html", prompts=prompts, error=str(e))
 
-
-# ==========================================
-# DELETE PROMPT (ADMIN)
-# ==========================================
-
+# DELETE PROMPT
 @app.route("/admin/delete-prompt/<int:prompt_id>", methods=["POST"])
 def delete_prompt(prompt_id):
     db = SessionLocal()
@@ -218,13 +180,7 @@ def delete_prompt(prompt_id):
     db.close()
     return redirect(url_for("admin"))
 
-
-# ==========================================
-# RUN - Render ke liye
-# ==========================================
-
+# RUN
 if __name__ == "__main__":
-    # Render pe production mode me gunicorn chalta hai
-    # Local development ke liye
     port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
