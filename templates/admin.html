@@ -92,4 +92,270 @@
         }
         .admin-panel {
             background: #fcf9f4;
-            border-radius: 28
+            border-radius: 28px;
+            border: 1px solid #e4d9c8;
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+        .admin-panel h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2b1e0e;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            margin-bottom: 0.8rem;
+        }
+        .form-row label {
+            font-weight: 600;
+            color: #3d2c1a;
+            font-size: 0.85rem;
+        }
+        .form-row input, .form-row textarea, .form-row select {
+            padding: 0.6rem 0.8rem;
+            border-radius: 16px;
+            border: 1px solid #d6c9b4;
+            background: #fcf9f4;
+            font-size: 0.9rem;
+            transition: 0.1s;
+            width: 100%;
+        }
+        .form-row input:focus, .form-row textarea:focus, .form-row select:focus {
+            outline: 2px solid #b8a182;
+            border-color: transparent;
+        }
+        .form-row textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        .form-row-inline {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.8rem;
+        }
+        @media (max-width: 480px) {
+            .form-row-inline {
+                grid-template-columns: 1fr;
+            }
+        }
+        .btn-primary {
+            background: #2f2214;
+            border: none;
+            color: #f6efe5;
+            font-weight: 600;
+            padding: 0.5rem 1.5rem;
+            border-radius: 60px;
+            cursor: pointer;
+            border: 1px solid #4d3d29;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            width: 100%;
+            justify-content: center;
+        }
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+        .btn-primary:hover {
+            background: #42321e;
+        }
+        .btn-danger {
+            background: #8b2f2f;
+            border: none;
+            color: #f6efe5;
+            font-weight: 600;
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            cursor: pointer;
+            border: 1px solid #6b1f1f;
+            transition: 0.15s;
+            font-size: 0.75rem;
+        }
+        .btn-danger:active {
+            transform: scale(0.95);
+        }
+        .btn-danger:hover {
+            background: #a13232;
+        }
+        .status-msg {
+            margin-top: 0.6rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .status-msg.success {
+            color: #2d6a4f;
+        }
+        .status-msg.error {
+            color: #a13232;
+        }
+        .prompt-list {
+            margin-top: 1.5rem;
+        }
+        .prompt-list h3 {
+            font-size: 1rem;
+            color: #3d2c1a;
+            margin-bottom: 0.8rem;
+        }
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fcf9f4;
+            padding: 0.6rem 0.8rem;
+            border-radius: 16px;
+            border: 1px solid #e4d9c8;
+            margin-bottom: 0.4rem;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+        .list-item .info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            font-size: 0.85rem;
+        }
+        .list-item .info .badge {
+            background: #e7decb;
+            padding: 0.05rem 0.5rem;
+            border-radius: 40px;
+            font-size: 0.65rem;
+        }
+        .list-item .info .badge.published {
+            background: #b8d9b0;
+        }
+        .list-item .info .badge.draft {
+            background: #d9c8b0;
+        }
+        .list-item .info .date {
+            font-size: 0.65rem;
+            color: #7a6449;
+        }
+        .list-item .actions {
+            display: flex;
+            gap: 0.3rem;
+        }
+        .empty-list {
+            color: #7a6449;
+            font-style: italic;
+            padding: 1rem;
+            text-align: center;
+            background: #f2ede3;
+            border-radius: 16px;
+            font-size: 0.9rem;
+        }
+        .file-hint {
+            font-size: 0.75rem;
+            color: #7a6449;
+            margin-top: 0.2rem;
+        }
+        @media (max-width: 480px) {
+            .admin-panel {
+                padding: 1rem;
+            }
+            .list-item .info {
+                font-size: 0.8rem;
+            }
+            .main-header h1 {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <header class="main-header">
+        <h1>
+            <span>🔧</span> एडमिन
+        </h1>
+        <div class="header-actions">
+            <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> वापस</a>
+            <a href="/admin-logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> लॉगआउट</a>
+        </div>
+    </header>
+
+    <!-- Add Prompt Form -->
+    <div class="admin-panel">
+        <h2><i class="fas fa-plus-circle"></i> नया प्रॉम्प्ट जोड़ें</h2>
+        <form action="/admin/add-prompt" method="POST" enctype="multipart/form-data">
+            <div class="form-row">
+                <label for="title">शीर्षक (Title) *</label>
+                <input type="text" id="title" name="title" placeholder="जैसे: हाथी का स्कूल" required>
+            </div>
+            <div class="form-row">
+                <label for="prompt">प्रॉम्प्ट (Prompt) *</label>
+                <textarea id="prompt" name="prompt" placeholder="पूरा प्रॉम्प्ट यहाँ लिखें..." required></textarea>
+            </div>
+            <div class="form-row-inline">
+                <div class="form-row">
+                    <label for="category">कैटेगरी</label>
+                    <select id="category" name="category">
+                        <option value="funny">😂 Funny</option>
+                        <option value="animal">🐾 Animal</option>
+                        <option value="vlog">📱 Vlog</option>
+                        <option value="image">🖼️ Image</option>
+                        <option value="video">🎥 Video</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="status">स्टेटस</label>
+                    <select id="status" name="status">
+                        <option value="published">📢 Published</option>
+                        <option value="draft">📝 Draft</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="media">Media (Image/Video) *</label>
+                <input type="file" id="media" name="media" accept="image/*,video/*" required>
+                <div class="file-hint">📷 Image या 🎥 Video file upload करें</div>
+            </div>
+            <button type="submit" class="btn-primary"><i class="fas fa-save"></i> प्रॉम्प्ट जोड़ें</button>
+            <div id="statusMsg">
+                {% if message %}
+                    <div class="status-msg success">{{ message }}</div>
+                {% endif %}
+                {% if error %}
+                    <div class="status-msg error">{{ error }}</div>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Existing Prompts List -->
+    <div class="prompt-list">
+        <h3><i class="fas fa-list"></i> मौजूदा प्रॉम्प्ट्स ({{ prompts|length }})</h3>
+        {% if prompts %}
+            {% for prompt in prompts %}
+            <div class="list-item">
+                <div class="info">
+                    <strong>{{ prompt.title }}</strong>
+                    <span class="badge">{{ prompt.category if prompt.category else 'funny' }}</span>
+                    <span class="badge">{{ prompt.media_type }}</span>
+                    <span class="badge {% if prompt.status == 'published' %}published{% else %}draft{% endif %}">
+                        {{ prompt.status if prompt.status else 'published' }}
+                    </span>
+                    <span class="date">{{ prompt.created_at.strftime('%d-%m-%Y') if prompt.created_at else '' }}</span>
+                </div>
+                <div class="actions">
+                    <form action="/admin/delete-prompt/{{ prompt.id }}" method="POST" onsubmit="return confirm('क्या आप यह प्रॉम्प्ट हटाना चाहते हैं?');">
+                        <button type="submit" class="btn-danger"><i class="fas fa-trash"></i> हटाएं</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-list">अभी कोई प्रॉम्प्ट नहीं है। ऊपर फॉर्म से जोड़ें।</div>
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>
