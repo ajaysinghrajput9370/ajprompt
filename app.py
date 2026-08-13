@@ -1,5 +1,5 @@
 # ==========================================
-# app.py - Complete with Error Handling
+# app.py - Complete with Optional Photo Upload
 # ==========================================
 
 import os
@@ -22,7 +22,7 @@ app.secret_key = os.getenv("SECRET_KEY", "your-secret-key-here-change-in-product
 init_db()
 
 # ==========================================
-# GITHUB SETTINGS (with fallback)
+# GITHUB SETTINGS
 # ==========================================
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
@@ -144,16 +144,11 @@ def admin():
     return render_template("admin.html", prompts=prompts)
 
 # ==========================================
-# UPLOAD FILE TO GITHUB (with better error handling)
+# UPLOAD FILE TO GITHUB
 # ==========================================
 
 def upload_to_github(file):
-    # Check if GitHub credentials are available
-    if not GITHUB_TOKEN:
-        # If no token, use placeholder image
-        return None
-    
-    if not GITHUB_USERNAME or not GITHUB_REPO:
+    if not GITHUB_TOKEN or not GITHUB_USERNAME or not GITHUB_REPO:
         return None
     
     try:
@@ -192,7 +187,7 @@ def upload_to_github(file):
         return None
 
 # ==========================================
-# ADD PROMPT (ADMIN) - with fallback
+# ADD PROMPT - With Optional Photo
 # ==========================================
 
 @app.route("/admin/add-prompt", methods=["POST"])
@@ -217,12 +212,11 @@ def add_prompt():
         return render_template("admin.html", prompts=prompts, error="Prompt required hai.")
     
     try:
-        # Try to upload media to GitHub
         media_url = None
         media_type = "image"
         
+        # Agar photo upload ki hai toh GitHub pe upload karein
         if media and media.filename:
-            # Try GitHub upload
             uploaded_url = upload_to_github(media)
             if uploaded_url:
                 media_url = uploaded_url
@@ -230,10 +224,10 @@ def add_prompt():
                 if content_type.startswith("video/"):
                     media_type = "video"
             else:
-                # Fallback: use placeholder image
+                # Agar upload fail ho toh placeholder
                 media_url = f"https://picsum.photos/seed/{title.replace(' ', '')}/400/225"
         else:
-            # No media uploaded, use placeholder
+            # Agar photo nahi upload ki toh placeholder
             media_url = f"https://picsum.photos/seed/{title.replace(' ', '')}/400/225"
         
         db = SessionLocal()
@@ -254,11 +248,7 @@ def add_prompt():
         prompts = db.query(Prompt).order_by(Prompt.created_at.desc()).all()
         db.close()
         
-        message = "✅ Prompt successfully add ho gaya!"
-        if not GITHUB_TOKEN:
-            message += " (Note: GitHub token missing, using placeholder image)"
-        
-        return render_template("admin.html", prompts=prompts, message=message)
+        return render_template("admin.html", prompts=prompts, message="✅ Prompt successfully add ho gaya!")
         
     except Exception as e:
         db = SessionLocal()
@@ -267,7 +257,7 @@ def add_prompt():
         return render_template("admin.html", prompts=prompts, error=str(e))
 
 # ==========================================
-# DELETE PROMPT (ADMIN)
+# DELETE PROMPT
 # ==========================================
 
 @app.route("/admin/delete-prompt/<int:prompt_id>", methods=["POST"])
