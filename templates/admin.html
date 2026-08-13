@@ -1,5 +1,5 @@
 <!-- ========================================== -->
-<!-- templates/admin.html - Admin Panel (Login Protected) -->
+<!-- templates/admin.html - Updated -->
 <!-- ========================================== -->
 
 <!DOCTYPE html>
@@ -116,6 +116,11 @@
             font-weight: 600;
             color: #3d2c1a;
             font-size: 0.85rem;
+        }
+        .form-row label .optional {
+            font-weight: 400;
+            color: #7a6449;
+            font-size: 0.75rem;
         }
         .form-row input, .form-row textarea, .form-row select {
             padding: 0.6rem 0.8rem;
@@ -257,16 +262,15 @@
             color: #7a6449;
             margin-top: 0.2rem;
         }
-        @media (max-width: 480px) {
-            .admin-panel {
-                padding: 1rem;
-            }
-            .list-item .info {
-                font-size: 0.8rem;
-            }
-            .main-header h1 {
-                font-size: 1.2rem;
-            }
+        /* Photo optional styling */
+        .photo-optional-badge {
+            display: inline-block;
+            background: #e7decb;
+            padding: 0.1rem 0.6rem;
+            border-radius: 40px;
+            font-size: 0.65rem;
+            color: #5f4a30;
+            margin-left: 0.3rem;
         }
     </style>
 </head>
@@ -314,9 +318,14 @@
                 </div>
             </div>
             <div class="form-row">
-                <label for="media">Media (Image/Video) *</label>
-                <input type="file" id="media" name="media" accept="image/*,video/*" required>
-                <div class="file-hint">📷 Image या 🎥 Video file upload करें</div>
+                <label for="media">
+                    Media (Image/Video) 
+                    <span class="optional">(Optional)</span>
+                </label>
+                <input type="file" id="media" name="media" accept="image/*,video/*">
+                <div class="file-hint">
+                    📷 Image या 🎥 Video upload करें (Optional - नहीं भी upload करें तो auto placeholder image लग जाएगी)
+                </div>
             </div>
             <button type="submit" class="btn-primary"><i class="fas fa-save"></i> प्रॉम्प्ट जोड़ें</button>
             <div id="statusMsg">
