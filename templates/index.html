@@ -1,5 +1,5 @@
 <!-- ========================================== -->
-<!-- templates/index.html - User Side (Mobile Friendly) -->
+<!-- templates/index.html - AJ Prompts branding, no-image support, latest badge -->
 <!-- ========================================== -->
 
 <!DOCTYPE html>
@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>🎬 AI प्रॉम्प्ट लाइब्रेरी</title>
+    <title>AJ Prompts - AI प्रॉम्प्ट लाइब्रेरी</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -28,7 +28,6 @@
             max-width: 500px;
             width: 100%;
         }
-        /* Header */
         .main-header {
             display: flex;
             justify-content: space-between;
@@ -40,7 +39,7 @@
             margin-bottom: 1.2rem;
         }
         .main-header h1 {
-            font-size: 1.4rem;
+            font-size: 1.6rem;
             font-weight: 700;
             color: #3d2c1a;
             display: flex;
@@ -48,7 +47,7 @@
             gap: 0.4rem;
         }
         .main-header h1 span {
-            font-size: 1.6rem;
+            font-size: 1.8rem;
         }
         .header-right {
             display: flex;
@@ -63,8 +62,7 @@
             color: #5f4a30;
             font-weight: 600;
         }
-        /* No admin button visible to users */
-        /* Filters - Mobile friendly scroll */
+        /* Filter bar */
         .filter-bar {
             display: flex;
             gap: 0.4rem;
@@ -102,7 +100,7 @@
             background: #2f2214;
             color: #f6efe5;
         }
-        /* Grid - Mobile First */
+        /* Grid */
         .prompt-grid {
             display: flex;
             flex-direction: column;
@@ -116,9 +114,25 @@
             transition: box-shadow 0.2s;
             cursor: pointer;
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            position: relative;
         }
         .prompt-card:active {
             transform: scale(0.99);
+        }
+        /* Trending / New badge */
+        .trending-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            background: #d32f2f;
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.15rem 0.9rem;
+            border-radius: 40px;
+            letter-spacing: 0.5px;
+            z-index: 2;
+            box-shadow: 0 2px 6px rgba(211,47,47,0.4);
         }
         .card-media {
             width: 100%;
@@ -134,6 +148,28 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+        /* No-image placeholder */
+        .card-media.no-image {
+            background: linear-gradient(145deg, #e8e0d2, #d6c9b4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            text-align: center;
+        }
+        .card-media.no-image .big-icon {
+            font-size: 3.5rem;
+            opacity: 0.4;
+            margin-bottom: 0.2rem;
+        }
+        .card-media.no-image .card-title-only {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #3d2c1a;
+            word-break: break-word;
+            padding: 0 0.5rem;
         }
         .card-badge {
             position: absolute;
@@ -185,7 +221,6 @@
             line-height: 1.4;
             opacity: 0.8;
         }
-        /* Empty state */
         .empty-state {
             background: #f2ede3;
             border-radius: 32px;
@@ -201,7 +236,6 @@
             display: block;
             margin-bottom: 0.6rem;
         }
-        /* Footer */
         .footer-note {
             margin-top: 2rem;
             color: #5a4b34;
@@ -211,7 +245,7 @@
             padding-top: 1.2rem;
             width: 100%;
         }
-        /* Modal - Mobile First */
+        /* Modal */
         #detailModal {
             display: none;
             position: fixed;
@@ -261,6 +295,15 @@
             width: 100%;
             max-height: 250px;
             object-fit: cover;
+        }
+        #detailModal .modal-box .detail-media.no-image {
+            background: linear-gradient(145deg, #e8e0d2, #d6c9b4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 150px;
+            font-size: 2.5rem;
+            color: #5f4a30;
         }
         #detailModal .modal-box .prompt-text {
             background: #f2ede3;
@@ -324,21 +367,21 @@
 </head>
 <body>
 <div class="page">
-    <!-- Header - No Admin Button -->
     <header class="main-header">
         <h1>
-            <span>🎬</span> AI प्रॉम्प्ट्स
+            <span>✨</span> AJ Prompts
         </h1>
         <div class="header-right">
             <span class="count-badge" id="countDisplay">0</span>
         </div>
     </header>
 
-    <!-- Filters - Mobile Scrollable -->
+    <!-- Filters -->
     <div class="filter-bar" id="filterBar">
         <button class="filter-btn active" data-filter="all">सभी</button>
         <button class="filter-btn" data-filter="image">🖼️ Image</button>
         <button class="filter-btn" data-filter="video">🎥 Video</button>
+        <button class="filter-btn" data-filter="text">📝 Text</button>
         <button class="filter-btn" data-filter="funny">😂 Funny</button>
         <button class="filter-btn" data-filter="animal">🐾 Animal</button>
         <button class="filter-btn" data-filter="vlog">📱 Vlog</button>
@@ -348,15 +391,38 @@
     <div class="prompt-grid" id="promptGrid">
         {% if prompts %}
             {% for prompt in prompts %}
-            <div class="prompt-card" onclick="openDetail({{ prompt.id }})" data-category="{{ prompt.category if prompt.category else 'funny' }}">
-                <div class="card-media">
-                    {% if prompt.media_type == 'video' %}
-                        <video src="{{ prompt.media_url }}" muted></video>
-                    {% else %}
-                        <img src="{{ prompt.media_url }}" alt="{{ prompt.title }}" loading="lazy">
-                    {% endif %}
-                    <span class="card-badge">{{ prompt.media_type }}</span>
-                </div>
+            <div class="prompt-card" onclick="openDetail({{ prompt.id }})" data-category="{{ prompt.category if prompt.category else 'funny' }}" data-media-type="{{ prompt.media_type }}">
+                <!-- Trending badge on the very first (latest) prompt -->
+                {% if loop.index == 1 %}
+                <div class="trending-badge">🔥 नया</div>
+                {% endif %}
+
+                {% if prompt.media_url and prompt.media_url.strip() %}
+                    <!-- Media exists -->
+                    <div class="card-media">
+                        {% if prompt.media_type == 'video' %}
+                            <video src="{{ prompt.media_url }}" muted></video>
+                        {% else %}
+                            <img src="{{ prompt.media_url }}" alt="{{ prompt.title }}" loading="lazy">
+                        {% endif %}
+                        <span class="card-badge">{{ prompt.media_type }}</span>
+                    </div>
+                {% else %}
+                    <!-- No media – show only title nicely -->
+                    <div class="card-media no-image">
+                        <div class="big-icon">
+                            {% if prompt.category == 'funny' %}😂
+                            {% elif prompt.category == 'animal' %}🐾
+                            {% elif prompt.category == 'vlog' %}📱
+                            {% elif prompt.category == 'image' %}🖼️
+                            {% elif prompt.category == 'video' %}🎥
+                            {% else %}📌
+                            {% endif %}
+                        </div>
+                        <div class="card-title-only">{{ prompt.title }}</div>
+                    </div>
+                {% endif %}
+
                 <div class="card-body">
                     <div class="card-title">
                         <span class="emoji">
@@ -381,7 +447,7 @@
         {% else %}
             <div class="empty-state">
                 <i class="fas fa-fire"></i>
-                🔥 AI Prompts Coming Soon<br>
+                🔥 कोई प्रॉम्प्ट नहीं<br>
                 <span style="font-size:0.85rem;opacity:0.7;">नए AI Image और Video Prompts जल्द ही यहाँ उपलब्ध होंगे।</span>
             </div>
         {% endif %}
@@ -402,7 +468,6 @@
 </div>
 
 <script>
-    // Prompts data from server
     const promptsData = [
         {% for prompt in prompts %}
         {
@@ -411,7 +476,7 @@
             prompt: `{{ prompt.prompt|safe }}`,
             category: "{{ prompt.category if prompt.category else 'funny' }}",
             media_type: "{{ prompt.media_type }}",
-            media_url: "{{ prompt.media_url|safe }}"
+            media_url: "{{ prompt.media_url|safe if prompt.media_url else '' }}"
         },
         {% endfor %}
     ];
@@ -423,9 +488,17 @@
         const modal = document.getElementById('detailModal');
         const content = document.getElementById('detailContent');
 
-        const mediaHtml = p.media_type === 'video' ?
-            `<video src="${p.media_url}" controls></video>` :
-            `<img src="${p.media_url}" alt="${p.title}">`;
+        let mediaHtml = '';
+        if (p.media_url && p.media_url.trim() !== '') {
+            if (p.media_type === 'video') {
+                mediaHtml = `<video src="${p.media_url}" controls></video>`;
+            } else {
+                mediaHtml = `<img src="${p.media_url}" alt="${p.title}">`;
+            }
+        } else {
+            // No media: show a nice placeholder
+            mediaHtml = `<div class="detail-media no-image">📝 ${p.category}</div>`;
+        }
 
         content.innerHTML = `
             <h2>${p.title}</h2>
@@ -482,7 +555,7 @@
         document.body.removeChild(ta);
     }
 
-    // Filter - Mobile friendly
+    // Filter logic
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -491,11 +564,21 @@
             const cards = document.querySelectorAll('.prompt-card');
             let visibleCount = 0;
             cards.forEach(c => {
+                const cat = c.dataset.category || 'funny';
+                const mediaType = c.dataset.mediaType || 'text';
                 if (filter === 'all') {
                     c.style.display = 'block';
                     visibleCount++;
+                } else if (filter === 'image' || filter === 'video' || filter === 'text') {
+                    // filter by media_type
+                    if (mediaType === filter) {
+                        c.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        c.style.display = 'none';
+                    }
                 } else {
-                    const cat = c.dataset.category || 'funny';
+                    // filter by category
                     if (cat === filter) {
                         c.style.display = 'block';
                         visibleCount++;
@@ -508,13 +591,13 @@
         });
     });
 
-    // Count on load
+    // Initial count
     document.addEventListener('DOMContentLoaded', function() {
         const visible = document.querySelectorAll('.prompt-card');
         document.getElementById('countDisplay').textContent = visible.length;
     });
 
-    // Close modal with Escape key
+    // Close modal with Escape
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeModal();
     });
