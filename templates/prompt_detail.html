@@ -1,5 +1,5 @@
 <!-- ========================================== -->
-<!-- templates/prompt_detail.html - Single Prompt Page -->
+<!-- templates/prompt_detail.html - AJ Prompts, no-image handling -->
 <!-- ========================================== -->
 
 <!DOCTYPE html>
@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ prompt.title }} - AI प्रॉम्प्ट</title>
+    <title>{{ prompt.title }} - AJ Prompts</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -78,6 +78,16 @@
             max-height: 300px;
             object-fit: cover;
         }
+        .detail-media.no-image {
+            background: linear-gradient(145deg, #e8e0d2, #d6c9b4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+            font-size: 3rem;
+            color: #5f4a30;
+            font-weight: 600;
+        }
         .prompt-text {
             background: #f2ede3;
             border-radius: 16px;
@@ -139,11 +149,23 @@
             <span>{{ prompt.status if prompt.status else 'published' }}</span>
         </div>
         
-        <div class="detail-media">
-            {% if prompt.media_type == 'video' %}
-                <video src="{{ prompt.media_url }}" controls></video>
+        <div class="detail-media {% if not prompt.media_url or prompt.media_url.strip() == '' %}no-image{% endif %}">
+            {% if prompt.media_url and prompt.media_url.strip() != '' %}
+                {% if prompt.media_type == 'video' %}
+                    <video src="{{ prompt.media_url }}" controls></video>
+                {% else %}
+                    <img src="{{ prompt.media_url }}" alt="{{ prompt.title }}">
+                {% endif %}
             {% else %}
-                <img src="{{ prompt.media_url }}" alt="{{ prompt.title }}">
+                <!-- No media: show category icon and text -->
+                {% if prompt.category == 'funny' %}😂
+                {% elif prompt.category == 'animal' %}🐾
+                {% elif prompt.category == 'vlog' %}📱
+                {% elif prompt.category == 'image' %}🖼️
+                {% elif prompt.category == 'video' %}🎥
+                {% else %}📌
+                {% endif %}
+                <span style="font-size:1rem;margin-left:0.5rem;">{{ prompt.media_type }}</span>
             {% endif %}
         </div>
         
