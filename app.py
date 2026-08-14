@@ -1,5 +1,5 @@
 # ==========================================
-# app.py - Complete with Optional Photo Upload
+# app.py - Updated with no-image handling and AJ Prompts branding
 # ==========================================
 
 import os
@@ -187,7 +187,7 @@ def upload_to_github(file):
         return None
 
 # ==========================================
-# ADD PROMPT - With Optional Photo
+# ADD PROMPT - With Optional Photo (now stores None if no file)
 # ==========================================
 
 @app.route("/admin/add-prompt", methods=["POST"])
@@ -213,7 +213,7 @@ def add_prompt():
     
     try:
         media_url = None
-        media_type = "image"
+        media_type = "text"   # अगर कोई फाइल नहीं तो 'text' रखें
         
         # Agar photo upload ki hai toh GitHub pe upload karein
         if media and media.filename:
@@ -223,12 +223,10 @@ def add_prompt():
                 content_type = (media.content_type or "").lower()
                 if content_type.startswith("video/"):
                     media_type = "video"
-            else:
-                # Agar upload fail ho toh placeholder
-                media_url = f"https://picsum.photos/seed/{title.replace(' ', '')}/400/225"
-        else:
-            # Agar photo nahi upload ki toh placeholder
-            media_url = f"https://picsum.photos/seed/{title.replace(' ', '')}/400/225"
+                else:
+                    media_type = "image"
+            # अगर अपलोड फेल हो तो भी media_url None ही रहेगा (कोई प्लेसहोल्डर नहीं)
+        # अगर फाइल नहीं आई तो media_url None ही रहेगा और media_type = 'text'
         
         db = SessionLocal()
         new_prompt = Prompt(
@@ -236,7 +234,7 @@ def add_prompt():
             prompt=prompt_text,
             category=category,
             media_type=media_type,
-            media_url=media_url,
+            media_url=media_url,    # None हो सकता है
             status=status,
             is_active=True
         )
